@@ -1,0 +1,54 @@
+<h1 style="text-align: center;">Câmbio de Moedas</h1>
+
+<div class="select-container">
+  <label for="currency-select">Escolha a moeda:</label>
+  <select id="currency-select">
+    <% @chart_data.each do |chart| %>
+      <!-- Popula o menu de seleção com as opções de moedas -->
+      <option value="<%= chart[:name] %>"><%= chart[:name] %></option>
+    <% end %>
+  </select>
+</div>
+
+<div class="chart-container">
+  <div class="chart-title" id="chart-title"><%= @chart_data.first[:name] %></div>
+  <%= column_chart @chart_data.first[:data], id: "currency-chart", height: "300px", class: "chart", 
+    library: {
+      title: { text: "#{@chart_data.first[:name]} Exchange Rates", x: -20, style: { color: '#333', fontWeight: 'bold', fontSize: '20px' } },
+      xAxis: { title: { text: 'Date', style: { color: '#333', fontWeight: 'bold' } } },
+      yAxis: { title: { text: 'Rate', style: { color: '#333', fontWeight: 'bold' } } },
+      legend: { enabled: true, layout: 'vertical', align: 'right', verticalAlign: 'middle', itemStyle: { color: '#333', fontWeight: 'bold' } },
+      plotOptions: { series: { marker: { enabled: true, radius: 5 } }, column: { borderWidth: 0, dataLabels: { enabled: true, style: { color: '#333', fontWeight: 'bold' } } } },
+      tooltip: { backgroundColor: '#333', style: { color: '#fff', fontWeight: 'bold' } }
+    }
+  %>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // Convertendo os dados do Ruby para um formato JSON utilizável em JavaScript
+    const chartData = <%= raw @chart_data.to_json %>;
+    const select = document.getElementById('currency-select');
+    const chartTitle = document.getElementById('chart-title');
+
+    select.addEventListener('change', function() {
+      const selectedCurrency = select.value;
+      const data = chartData.find(chart => chart.name === selectedCurrency);
+
+      chartTitle.innerHTML = selectedCurrency;
+
+      // Redesenhando o gráfico com os novos dados selecionados pelo usuário
+      const chart = new Chartkick.ColumnChart("currency-chart", data.data, {
+        height: "300px",
+        library: {
+          title: { text: `${selectedCurrency} Exchange Rates`, x: -20, style: { color: '#333', fontWeight: 'bold', fontSize: '20px' } },
+          xAxis: { title: { text: 'Date', style: { color: '#333', fontWeight: 'bold' } } },
+          yAxis: { title: { text: 'Rate', style: { color: '#333', fontWeight: 'bold' } } },
+          legend: { enabled: true, layout: 'vertical', align: 'right', verticalAlign: 'middle', itemStyle: { color: '#333', fontWeight: 'bold' } },
+          plotOptions: { series: { marker: { enabled: true, radius: 5 } }, column: { borderWidth: 0, dataLabels: { enabled: true, style: { color: '#333', fontWeight: 'bold' } } } },
+          tooltip: { backgroundColor: '#333', style: { color: '#fff', fontWeight: 'bold' } }
+        }
+      });
+    });
+  });
+</script>
